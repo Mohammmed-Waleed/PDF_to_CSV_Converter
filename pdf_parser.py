@@ -1,9 +1,11 @@
 import fitz
 import re
+from datetime import datetime
 
 def extract_sections_from_pdf(pdf_path, keywords):
     """
-    Extracts specific sections from a PDF file based on a list of keywords.
+    Extracts specific sections from a PDF file based on a list of keywords,
+    ensuring dates are formatted as DD/MM/YYYY, accepting both DD/MM/YYYY and MM/DD/YYYY formats.
 
     Args:
         pdf_path (str): The path to the PDF file.
@@ -36,19 +38,39 @@ def extract_sections_from_pdf(pdf_path, keywords):
             if current_key:
                 sections[current_key] += " " + line.strip()
 
-    # Additional extraction for "Date of Initial CR Request" if not found by keyword logic
-    if "Date of Initial CR Request" in keywords and not sections["Date of Initial CR Request"]:
-        # The regular expression has been updated to be much more robust
-        # and handle unexpected characters and spacing, including newlines.
+    # Extraction for "Date of Initial CR Request"
+    if "Date of Initial CR Request" in keywords:
         match = re.search(
-            r"Date of Initial CR(?: Request)?.*?([0-9]{2}/[0-9]{2}/[0-9]{4})",
+            r"Date of Initial CR(?: Request)?.*?([0-9]{1,2}[-/][0-9]{1,2}[-/][0-9]{4})",
             full_text,
             re.IGNORECASE | re.DOTALL
         )
         if match:
-            sections["Date of Initial CR Request"] = match.group(1)
+            raw_date = match.group(1)
+            cleaned_date = raw_date.replace("-", "/").strip()
+            date_obj = None
             
-    # Correct extraction for "Implementation Country & Site"
+            # Try parsing with DD/MM/YYYY
+            try:
+                date_obj = datetime.strptime(cleaned_date, "%d/%m/%Y")
+            except ValueError:
+                pass
+            
+            # If parsing failed, try MM/DD/YYYY
+            if not date_obj:
+                try:
+                    date_obj = datetime.strptime(cleaned_date, "%m/%d/%Y")
+                except ValueError:
+                    pass
+            
+            # If successfully parsed, format to DD/MM/YYYY
+            if date_obj:
+                sections["Date of Initial CR Request"] = date_obj.strftime("%d/%m/%Y")
+            else:
+                # If parsing failed, store the cleaned date as-is
+                sections["Date of Initial CR Request"] = cleaned_date
+
+    # Extraction for "Implementation Country & Site"
     if "Implementation Country & Site" in keywords:
         match = re.search(
             r"Implementation\s*Country\s*&\s*Site[\s\"'.,]*(\w+)",
@@ -57,6 +79,5 @@ def extract_sections_from_pdf(pdf_path, keywords):
         )
         if match:
             sections["Implementation Country & Site"] = match.group(1)
-            
 
     return sections
