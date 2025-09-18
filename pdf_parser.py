@@ -5,7 +5,8 @@ from datetime import datetime
 def extract_sections_from_pdf(pdf_path, keywords):
     """
     Extracts specific sections from a PDF file based on a list of keywords,
-    ensuring dates are formatted as DD/MM/YYYY, accepting both DD/MM/YYYY and MM/DD/YYYY formats.
+    ensuring dates are formatted as DD/MM/YYYY, accepting formats:
+    DD/MM/YYYY, MM/DD/YYYY, YYYY/MM/DD.
 
     Args:
         pdf_path (str): The path to the PDF file.
@@ -41,7 +42,7 @@ def extract_sections_from_pdf(pdf_path, keywords):
     # Extraction for "Date of Initial CR Request"
     if "Date of Initial CR Request" in keywords:
         match = re.search(
-            r"Date of Initial CR(?: Request)?.*?([0-9]{1,2}[-/][0-9]{1,2}[-/][0-9]{4})",
+            r"Date of Initial CR(?: Request)?.*?([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}|[0-9]{1,2}[-/][0-9]{1,2}[-/][0-9]{4})",
             full_text,
             re.IGNORECASE | re.DOTALL
         )
@@ -49,7 +50,7 @@ def extract_sections_from_pdf(pdf_path, keywords):
             raw_date = match.group(1)
             cleaned_date = raw_date.replace("-", "/").strip()
             date_obj = None
-            
+
             # Try parsing with DD/MM/YYYY
             try:
                 date_obj = datetime.strptime(cleaned_date, "%d/%m/%Y")
@@ -60,6 +61,13 @@ def extract_sections_from_pdf(pdf_path, keywords):
             if not date_obj:
                 try:
                     date_obj = datetime.strptime(cleaned_date, "%m/%d/%Y")
+                except ValueError:
+                    pass
+            
+            # If parsing failed, try YYYY/MM/DD
+            if not date_obj:
+                try:
+                    date_obj = datetime.strptime(cleaned_date, "%Y/%m/%d")
                 except ValueError:
                     pass
             
