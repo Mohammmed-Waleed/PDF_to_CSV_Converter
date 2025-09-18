@@ -1,0 +1,31 @@
+# Byte-compiled / cache
+__[Pp]ycache__/
+
+
+# Virtual environment
+venv/
+.venv/
+ENV/
+
+# Logs
+*.log
+
+# Database files
+*.db
+*.sqlite3
+DataBase/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+error_log.txt
+
+extracted_sections_filtered.csv
+
+
+pdf_url.csv
+pdf_urls.csv
+pdf_urls.txt
+pdf_url.txt
+
