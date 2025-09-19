@@ -1,5 +1,6 @@
 # Byte-compiled / cache
 __[Pp]ycache__/
+pdf_parser.cpython-313.pyc
 
 
 # Virtual environment
@@ -30,3 +31,5 @@ pdf_urls.txt
 pdf_url.txt
 
 ModelFile
+__pycache__/pdf_parser.cpython-313.pyc
+__pycache__/pdf_parser.cpython-313.pyc
