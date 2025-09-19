@@ -2,6 +2,8 @@ import fitz
 import re
 from datetime import datetime
 
+import unicodedata
+
 def extract_sections_from_pdf(pdf_path, keywords):
     """
     Extracts specific sections from a PDF file based on a list of keywords,
@@ -21,6 +23,23 @@ def extract_sections_from_pdf(pdf_path, keywords):
     # Extract plain text from all pages
     for page in doc:
         full_text += page.get_text("text") + "\n"
+
+
+
+    def clean_text(text: str) -> str:
+        # Normalize unicode
+        text = unicodedata.normalize('NFKC', text)
+        # Replace various dash types with a simple hyphen
+        text = re.sub(r'[–—―]', '-', text)
+        # Replace smart quotes with ascii quotes
+        text = text.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
+        # Remove control characters (except newline maybe)
+        text = ''.join(ch for ch in text if ch.isprintable() or ch in ['\n'])
+        # Collapse whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+
+    full_text = clean_text(full_text)
 
     # Normalize spaces
     lines = [line.strip() for line in full_text.splitlines() if line.strip()]
