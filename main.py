@@ -86,3 +86,17 @@ output_csv = "extracted_sections_filtered.csv"
 df_out = pd.DataFrame(all_sections)
 df_out.to_csv(output_csv, index=False, encoding="utf-8")
 print(f"All extracted data saved to {output_csv}")
+
+try:
+    # Reload the saved CSV
+    df_out = pd.read_csv(output_csv)
+
+    # Add TPVN column (case-insensitive, normalized to uppercase)
+    df_out["TPVN"] = df_out["filename"].str.extract(r'(?i)^(tpv\d+)')[0].str.upper()
+
+    # Save back with TPVN included
+    df_out.to_csv(output_csv, index=False, encoding="utf-8")
+    print("TPVN column added and file updated successfully.")
+
+except Exception as e:
+    print(f"Failed to add TPVN column: {e}")
